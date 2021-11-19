@@ -55,7 +55,6 @@ func CreatePoolMsg(data []byte) (*types.MsgCreatePool, error) {
 	}
 
 	msg := &types.MsgCreatePool{
-		// Sender: clientCtx.GetFromAddress().String(),
 		PoolParams: types.PoolParams{
 			SwapFee: swapFee,
 			ExitFee: exitFee,
@@ -100,6 +99,9 @@ func CreatePoolMsg(data []byte) (*types.MsgCreatePool, error) {
 			}
 
 			smoothWeightParams.StartTime = startTime
+		}
+		if pool.SmoothWeightChangeParams.StartTime == "" {
+			smoothWeightParams.StartTime = time.Now()
 		}
 
 		msg.PoolParams.SmoothWeightChangeParams = &smoothWeightParams

@@ -1,7 +1,6 @@
 package simulator
 
 import (
-	"fmt"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -11,9 +10,15 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
-func Simulate(poolParams types.PoolParams, poolAssets []types.PoolAsset) {
+type PriceData struct {
+	Time  int64   `json:"time"`
+	Price sdk.Dec `json:"value"`
+}
+
+func Simulate(poolParams types.PoolParams, poolAssets []types.PoolAsset) ([]PriceData, error) {
 	app := simapp.Setup(false)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{}).WithBlockTime(time.Now())
+	startTime := poolParams.SmoothWeightChangeParams.StartTime
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{}).WithBlockTime(startTime)
 	var (
 		acc1 = sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address().Bytes())
 		acc2 = sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address().Bytes())
@@ -44,26 +49,29 @@ func Simulate(poolParams types.PoolParams, poolAssets []types.PoolAsset) {
 			),
 		)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 
 	poolId, err := app.GAMMKeeper.CreatePool(ctx, acc1, poolParams, poolAssets, "")
 	if err != nil {
-		panic(err)
-	}
-	potPrice, err := app.GAMMKeeper.CalculateSpotPriceWithSwapFee(ctx, poolId, "uosmo", "ustars")
-	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	// app.GAMMKeeper.GetPool(ctx.WithBlockTime(time.Now().Add(time.Hour*1)), 1)
-	fmt.Println(potPrice.String())
+	endTime := startTime.Add(poolParams.SmoothWeightChangeParams.Duration)
+	currentTime := startTime
 
-	ctx = ctx.WithBlockTime(time.Now().Add(time.Hour * 48))
-	potPrice, err = app.GAMMKeeper.CalculateSpotPriceWithSwapFee(ctx, poolId, "uosmo", "ustars")
-	if err != nil {
-		panic(err)
+	prices := make([]PriceData, 0)
+	for currentTime.Before(endTime) {
+		ctx = ctx.WithBlockTime(currentTime)
+
+		spotPrice, err := app.GAMMKeeper.CalculateSpotPriceWithSwapFee(ctx, poolId, "uosmo", "ustars")
+		if err != nil {
+			return nil, err
+		}
+		prices = append(prices, PriceData{currentTime.Unix(), spotPrice})
+		currentTime = currentTime.Add(time.Minute * 5)
 	}
-	fmt.Println(potPrice.String())
+
+	return prices, nil
 }
