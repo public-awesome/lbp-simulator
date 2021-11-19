@@ -1,8 +1,7 @@
 // @ts-nocheck
-import React, { useEffect } from 'react';
-import { useRef, memo } from 'react';
+import { useRef, useEffect } from 'react';
 import { createChart, CrosshairMode } from 'lightweight-charts';
-import { ResizeObserver } from 'resize-observer';
+// import { ResizeObserver } from 'resize-observer';
 // import { useMediaQuery, useMediaQueries } from '@react-hook/media-query';
 
 import { float2Numbers } from '../../util/helpers';
