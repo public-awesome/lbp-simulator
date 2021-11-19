@@ -12,17 +12,48 @@ const PriceChart = dynamic(() => import('../components/charts/price'), {
   ssr: false,
 });
 
-const lengthOptions = [{ name: '3d' }, { name: '5d' }, { name: '7d' }];
+const lengthOptions = [
+  { name: '3d', duration: '72h' },
+  { name: '5d', duration: '120h' },
+  { name: '7d', duration: '168h' },
+];
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
+
+interface Weight {
+  stars: number;
+  osmo: number;
+}
+interface RunSettings {
+  initialWeight: Weight;
+  endWeight: Weight;
+  duration: string;
+  volume: number;
+}
 interface FormProps {
-  onRun?: () => {};
+  onRun?: (settings: RunSettings) => void;
 }
 
 const Form: React.FC<FormProps> = ({ onRun }) => {
   const [length, setLength] = useState(lengthOptions[1]);
+  const [initialWeight, setInitialweight] = useState<Weight>({
+    stars: 90,
+    osmo: 10,
+  });
+  const [endWeight, setEndweight] = useState<Weight>({ stars: 1, osmo: 1 });
+  const [dailyVolume, setDailyVolume] = useState(1000000);
+  const handleClick = useCallback(() => {
+    if (onRun) {
+      onRun({
+        duration: length.duration,
+        initialWeight: initialWeight,
+        endWeight: endWeight,
+        volume: dailyVolume,
+      });
+    }
+  }, [length, initialWeight, endWeight, dailyVolume, onRun]);
   return (
     <form className="space-y-8 divide-y divide-gray-200">
       <div className="max-w-md">
@@ -41,10 +72,18 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
             </label>
             <div className="mt-1">
               <input
-                type="text"
+                type="number"
                 name="initial-stars-weight"
                 id="initial-stars-weight"
-                placeholder={'90'}
+                value={initialWeight.stars}
+                onChange={(e) => {
+                  setInitialweight((prevWeight) => {
+                    return {
+                      stars: Number(e.target.value),
+                      osmo: prevWeight.osmo,
+                    };
+                  });
+                }}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-40  sm:text-sm border-gray-300 rounded-md"
               />
             </div>
@@ -59,10 +98,18 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
             </label>
             <div className="mt-1">
               <input
-                type="text"
+                type="number"
                 name="initial-osmo-weight"
                 id="initial-osmo-weight"
-                placeholder="10 "
+                value={initialWeight.osmo}
+                onChange={(e) => {
+                  setInitialweight((prevWeight) => {
+                    return {
+                      stars: prevWeight.stars,
+                      osmo: Number(e.target.value),
+                    };
+                  });
+                }}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-40 sm:text-sm border-gray-300 rounded-md"
               />
             </div>
@@ -70,7 +117,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
 
           <div className="col-span-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Target Weigth
+              End Weigth
             </h3>
           </div>
           <div className="sm:col-span-3">
@@ -82,10 +129,18 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
             </label>
             <div className="mt-1">
               <input
-                type="text"
+                type="number"
                 name="end-stars-weight"
                 id="end-stars-weight"
-                placeholder={'1'}
+                value={endWeight.stars}
+                onChange={(e) => {
+                  setEndweight((prevWeight) => {
+                    return {
+                      stars: Number(e.target.value),
+                      osmo: prevWeight.osmo,
+                    };
+                  });
+                }}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-40  sm:text-sm border-gray-300 rounded-md"
               />
             </div>
@@ -100,10 +155,19 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
             </label>
             <div className="mt-1">
               <input
-                type="text"
+                type="number"
                 name="end-osmo-weight"
                 id="end-osmo-weight"
-                placeholder="1"
+                value={endWeight.osmo}
+                onChange={(e) => {
+                  setEndweight((prevWeight) => {
+                    return {
+                      stars: prevWeight.stars,
+                      osmo: Number(e.target.value),
+                    };
+                  });
+                  e.target.value;
+                }}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-40 sm:text-sm border-gray-300 rounded-md"
               />
             </div>
@@ -152,7 +216,10 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
                 id="volume"
                 name="volume"
                 type="number"
-                placeholder="1000000"
+                value={dailyVolume}
+                onChange={(e) => {
+                  setDailyVolume(Number(e.target.value));
+                }}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
               />
             </div>
@@ -161,6 +228,10 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
         <div className="pt-5">
           <button
             type="submit"
+            onClick={(e) => {
+              e.preventDefault();
+              handleClick();
+            }}
             className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             Run
@@ -190,8 +261,11 @@ function useInterval(callback, delay) {
     }
   }, [delay]);
 }
-function Chart() {
-  const [data, setData] = useState([]);
+
+interface ChartOptions {
+  data: Array<any>;
+}
+const Chart: React.FC<ChartOptions> = ({ data }) => {
   const [dataHover, setDataHover] = useState({
     price: '0',
     date: '-',
@@ -209,22 +283,22 @@ function Chart() {
         setOsmoPrice(data.osmosis.usd);
       });
   };
+  // initial price fetch
   useEffect(() => {
-    fetch('/api/simulate')
-      .then((resp) => resp.json())
-      .then((data) => {
-        setData(data.data);
-        const first = data.data[0];
-        const price = formateNumberDecimals(first.value, 6);
-        const currentDate = new Date(first.time * 1000);
-        setDataHover({
-          price,
-          value: first.value,
-          date: formatDateHours(currentDate),
-        });
-      });
     fetchOsmoPrice();
   }, []);
+  useEffect(() => {
+    if (data.length > 0) {
+      const first = data[0];
+      const price = formateNumberDecimals(first.value, 6);
+      const currentDate = new Date(first.time * 1000);
+      setDataHover({
+        price,
+        value: first.value,
+        date: formatDateHours(currentDate),
+      });
+    }
+  }, [data]);
   useInterval(() => {
     fetchOsmoPrice();
   }, 5000);
@@ -245,7 +319,6 @@ function Chart() {
   );
 
   useEffect(() => {
-    console.log(dataHover.value * osmoPrice);
     setPrice(dataHover.value * osmoPrice);
   }, [dataHover, osmoPrice]);
 
@@ -258,8 +331,17 @@ function Chart() {
       <PriceChart data={data} crossMove={crossMove} />
     </div>
   );
-}
+};
 export default function Home() {
+  const [data, setData] = useState([]);
+  const handleOnRun = (settings: RunSettings) => {
+    fetch('/api/simulate')
+      .then((resp) => resp.json())
+      .then((data) => {
+        setData(data.data);
+      });
+  };
+
   return (
     <div>
       <Head>
@@ -271,10 +353,10 @@ export default function Home() {
         <h1 className="text-6xl font-bold text-blue-600">LBP Simulator</h1>
         <div className="flex-1 relative z-0 flex overflow-hidden h-5/6 ">
           <main className="flex-1 relative z-0  focus:outline-none xl:order-last p-2">
-            <Chart />
+            <Chart data={data} />
           </main>
           <aside className="hidden relative xl:order-first xl:flex xl:flex-col flex-shrink-0 w-96 border-r border-gray-200 overflow-y-auto p-3">
-            <Form />
+            <Form onRun={handleOnRun} />
           </aside>
         </div>
       </div>
