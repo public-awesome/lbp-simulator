@@ -10,7 +10,7 @@ module.exports = {
     const prod = [
       {
         source: '/api/:slug*',
-        destination: `https://lbp-simulator-api.publicawesome.dev/api/:slug*`,
+        destination: `https://patdxamgr2.us-east-1.awsapprunner.com/api/:slug*`,
       },
     ];
     return process.env.NODE_ENV === 'production' ? prod : dev;

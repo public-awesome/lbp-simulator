@@ -29,6 +29,7 @@ interface Weight {
 interface RunSettings {
   initialWeight: Weight;
   endWeight: Weight;
+  deposit: Weight;
   duration: string;
   volume: number;
 }
@@ -42,6 +43,10 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
     stars: 90,
     osmo: 10,
   });
+  const [initialDeposit, setInitialDeposit] = useState<Weight>({
+    stars: 50000000,
+    osmo: 100000,
+  });
   const [endWeight, setEndweight] = useState<Weight>({ stars: 1, osmo: 1 });
   const [dailyVolume, setDailyVolume] = useState(1000000);
   const handleClick = useCallback(() => {
@@ -51,6 +56,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
         initialWeight: initialWeight,
         endWeight: endWeight,
         volume: dailyVolume,
+        deposit: initialDeposit,
       });
     }
   }, [length, initialWeight, endWeight, dailyVolume, onRun]);
@@ -223,7 +229,63 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
               />
             </div>
           </div>
+          <div className="col-span-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Initial Deposit
+            </h3>
+          </div>
+          <div className="sm:col-span-3">
+            <label
+              htmlFor="initial-stars-deposit"
+              className="block text-sm font-medium text-gray-700"
+            >
+              STARS
+            </label>
+            <div className="mt-1">
+              <input
+                type="number"
+                name="initial-stars-deposit"
+                id="initial-stars-deposit"
+                value={initialDeposit.stars}
+                onChange={(e) => {
+                  setInitialDeposit((prevWeight) => {
+                    return {
+                      stars: Number(e.target.value),
+                      osmo: prevWeight.osmo,
+                    };
+                  });
+                }}
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-40  sm:text-sm border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
+          <div className="sm:col-span-3">
+            <label
+              htmlFor="initial-osmo-deposit"
+              className="block text-sm font-medium text-gray-700"
+            >
+              OSMO
+            </label>
+            <div className="mt-1">
+              <input
+                type="number"
+                name="initial-osmo-deposit"
+                id="initial-osmo-deposit"
+                value={initialDeposit.osmo}
+                onChange={(e) => {
+                  setInitialDeposit((prevWeight) => {
+                    return {
+                      osmo: Number(e.target.value),
+                      stars: prevWeight.stars,
+                    };
+                  });
+                }}
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-40  sm:text-sm border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
         </div>
+
         <div className="pt-5">
           <button
             type="submit"
