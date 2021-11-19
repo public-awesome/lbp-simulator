@@ -6,9 +6,9 @@ import {
   formatDateHours,
   formateNumberDecimals,
   formateNumberPriceDecimals,
-} from './util/helpers';
+} from '../util/helpers';
 
-const PriceChart = dynamic(() => import('./components/charts/price'), {
+const PriceChart = dynamic(() => import('../components/charts/price'), {
   ssr: false,
 });
 
