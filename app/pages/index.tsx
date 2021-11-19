@@ -396,7 +396,14 @@ const Chart: React.FC<ChartOptions> = ({ data }) => {
 export default function Home() {
   const [data, setData] = useState([]);
   const handleOnRun = (settings: RunSettings) => {
-    fetch('/api/simulate')
+    const options = {
+      method: 'POST',
+      body: JSON.stringify(settings),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    fetch('/api/simulate', options)
       .then((resp) => resp.json())
       .then((data) => {
         setData(data.data);
