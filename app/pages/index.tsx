@@ -47,7 +47,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
   });
   const [initialDeposit, setInitialDeposit] = useState<Weight>({
     stars: 50000000,
-    osmo: 100000,
+    osmo: 135000,
   });
   const [endWeight, setEndweight] = useState<Weight>({ stars: 20, osmo: 20 });
   const [dailyVolume, setDailyVolume] = useState(1000000);
@@ -81,7 +81,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
         <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-6">
           <div className="col-span-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Initial Weigth
+              Initial Weight
             </h3>
           </div>
           <div className="sm:col-span-3">
@@ -138,7 +138,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
 
           <div className="col-span-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
-              End Weigth
+              End Weight
             </h3>
           </div>
           <div className="sm:col-span-3">
