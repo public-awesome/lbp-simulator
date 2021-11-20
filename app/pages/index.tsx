@@ -49,7 +49,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
     stars: 50000000,
     osmo: 100000,
   });
-  const [endWeight, setEndweight] = useState<Weight>({ stars: 1, osmo: 1 });
+  const [endWeight, setEndweight] = useState<Weight>({ stars: 20, osmo: 20 });
   const [dailyVolume, setDailyVolume] = useState(1000000);
   const [osmoPrice, setOsmoPrice] = useState(0.0);
   // initial price fetch

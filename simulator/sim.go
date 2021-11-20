@@ -1,7 +1,6 @@
 package simulator
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"sort"
@@ -146,7 +145,6 @@ func ExecuteBuys(ctx sdk.Context, keeper gammkeeper.Keeper, poolId uint64,
 		}
 		msg, err := CreateSwapExactAmountIn(buyer, sdk.NewInt64Coin("uosmo", currentBuy.Amount*1_000_000), pool)
 		if err != nil {
-			fmt.Println(err)
 			return simulatedBuys, totalAmount, buys, err
 		}
 		msgServer := gammkeeper.NewMsgServerImpl(keeper)
