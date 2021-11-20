@@ -75,6 +75,8 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
       });
     }
   }, [length, initialWeight, endWeight, dailyVolume, onRun, osmoPrice]);
+  const initialWeightTotal = initialWeight.stars + initialWeight.osmo;
+  const endWeightTotal = endWeight.stars + endWeight.osmo;
   return (
     <form className="space-y-8 divide-y divide-gray-200">
       <div className="max-w-md">
@@ -89,7 +91,14 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
               htmlFor="initial-stars-weight"
               className="block text-sm font-medium text-gray-700"
             >
-              STARS
+              STARS{' '}
+              <span className="text-xs">
+                (
+                {formaterNumber(
+                  (initialWeight.stars / initialWeightTotal) * 100
+                )}
+                %)
+              </span>
             </label>
             <div className="mt-1">
               <input
@@ -115,7 +124,14 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
               htmlFor="initial-osmo-weight"
               className="block text-sm font-medium text-gray-700"
             >
-              OSMO
+              OSMO{' '}
+              <span className="text-xs">
+                (
+                {formaterNumber(
+                  (initialWeight.osmo / initialWeightTotal) * 100
+                )}
+                %)
+              </span>
             </label>
             <div className="mt-1">
               <input
@@ -146,7 +162,11 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
               htmlFor="end-stars-weight"
               className="block text-sm font-medium text-gray-700"
             >
-              STARS
+              STARS{' '}
+              <span className="text-xs">
+                ({formaterNumber((endWeight.stars / endWeightTotal) * 100)}
+                %)
+              </span>
             </label>
             <div className="mt-1">
               <input
@@ -172,7 +192,11 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
               htmlFor="end-osmo-weight"
               className="block text-sm font-medium text-gray-700"
             >
-              OSMO
+              OSMO{' '}
+              <span className="text-xs">
+                ({formaterNumber((endWeight.osmo / endWeightTotal) * 100)}
+                %)
+              </span>
             </label>
             <div className="mt-1">
               <input
