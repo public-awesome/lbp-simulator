@@ -424,11 +424,19 @@ const Chart: React.FC<ChartOptions> = ({ simulation }) => {
     setPrice(dataHover.value * osmoPrice);
   }, [dataHover, osmoPrice]);
 
+  const startPrice =
+    simulation.data.length > 0 ? simulation.data[0].value * osmoPrice : 0.0;
+  const endPrice =
+    simulation.data.length > 0
+      ? simulation.data[simulation.data.length - 1].value * osmoPrice
+      : 0.0;
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <p>DailyVolume: {formaterNumber(simulation.daily_volume)}OSMO</p>
       <p>TotalVolume: {formaterNumber(simulation.total_volume)}OSMO</p>
       <p>Total Buys: {simulation.total_buys} </p>
+      <p>Start Price: {formateNumberPriceDecimals(startPrice)} </p>
+      <p>End Price: {formateNumberPriceDecimals(endPrice)} </p>
       <br />
       <p>Exchange Rate: 1STARS={dataHover.price}OSMO</p>
       <p>OSMO Price: {formateNumberPriceDecimals(osmoPrice)}</p>
