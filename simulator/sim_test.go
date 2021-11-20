@@ -1,7 +1,6 @@
 package simulator_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/public-awesome/lbp-simulator/simulator"
@@ -22,12 +21,6 @@ func TestSomething(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	txs := simulator.RandSplitVolume(1_000_000)
-	fmt.Println(txs)
-	total := int64(0)
-	for _, t := range txs {
-		total = total + t
-	}
-	fmt.Println(total)
-	simulator.Simulate(poolMsg.PoolParams, poolMsg.PoolAssets)
+
+	simulator.Simulate(poolMsg.PoolParams, poolMsg.PoolAssets, 200_000)
 }

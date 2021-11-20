@@ -3,6 +3,7 @@ package simulator
 import (
 	"bytes"
 	"encoding/json"
+	"time"
 )
 
 type createPoolInputs struct {
@@ -39,4 +40,9 @@ func (release *createPoolInputs) UnmarshalJSON(data []byte) error {
 
 	*release = createPoolInputs(createPoolE.XCreatePoolInputs)
 	return nil
+}
+
+type SimulatedBuyInfo struct {
+	Amount int64
+	Time   time.Time
 }

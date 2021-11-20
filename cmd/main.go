@@ -36,15 +36,10 @@ func main() {
 			return
 		}
 		rw.Header().Add("content-type", "application/json")
-		data, err := simulator.Simulate(poolMsg.PoolParams, poolMsg.PoolAssets)
+		resp, err := simulator.Simulate(poolMsg.PoolParams, poolMsg.PoolAssets, req.Volume)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
-		}
-		resp := struct {
-			Data []simulator.PriceData `json:"data"`
-		}{
-			data,
 		}
 		json.NewEncoder(rw).Encode(resp)
 	})
@@ -61,7 +56,7 @@ type SimulateRequest struct {
 		Stars int `json:"stars"`
 		Osmo  int `json:"osmo"`
 	} `json:"endWeight"`
-	Volume  int `json:"volume"`
+	Volume  int64 `json:"volume"`
 	Deposit struct {
 		Stars int `json:"stars"`
 		Osmo  int `json:"osmo"`

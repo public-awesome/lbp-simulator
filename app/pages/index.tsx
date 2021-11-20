@@ -6,6 +6,7 @@ import {
   formatDateHours,
   formateNumberDecimals,
   formateNumberPriceDecimals,
+  formaterNumber,
 } from '../util/helpers';
 
 const PriceChart = dynamic(() => import('../components/charts/price'), {
@@ -39,9 +40,10 @@ interface FormProps {
 
 const Form: React.FC<FormProps> = ({ onRun }) => {
   const [length, setLength] = useState(lengthOptions[1]);
+  const [ready, setReady] = useState(false);
   const [initialWeight, setInitialweight] = useState<Weight>({
-    stars: 90,
-    osmo: 10,
+    stars: 36,
+    osmo: 4,
   });
   const [initialDeposit, setInitialDeposit] = useState<Weight>({
     stars: 50000000,
@@ -49,17 +51,30 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
   });
   const [endWeight, setEndweight] = useState<Weight>({ stars: 1, osmo: 1 });
   const [dailyVolume, setDailyVolume] = useState(1000000);
+  const [osmoPrice, setOsmoPrice] = useState(0.0);
+  // initial price fetch
+  useEffect(() => {
+    fetch(
+      'https://api.coingecko.com/api/v3/simple/price?ids=osmosis&vs_currencies=usd'
+    )
+      .then((resp) => resp.json())
+      .then((data) => {
+        setReady(true);
+        setOsmoPrice(data.osmosis.usd);
+      });
+  }, []);
+
   const handleClick = useCallback(() => {
     if (onRun) {
       onRun({
         duration: length.duration,
         initialWeight: initialWeight,
         endWeight: endWeight,
-        volume: dailyVolume,
+        volume: Math.round(dailyVolume / osmoPrice),
         deposit: initialDeposit,
       });
     }
-  }, [length, initialWeight, endWeight, dailyVolume, onRun]);
+  }, [length, initialWeight, endWeight, dailyVolume, onRun, osmoPrice]);
   return (
     <form className="space-y-8 divide-y divide-gray-200">
       <div className="max-w-md">
@@ -214,7 +229,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
               htmlFor="volume"
               className="block text-sm font-medium text-gray-700"
             >
-              Daily Volume
+              Daily Volume (in $USD)
             </label>
             <div className="mt-1">
               <input
@@ -287,16 +302,18 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
         </div>
 
         <div className="pt-5">
-          <button
-            type="submit"
-            onClick={(e) => {
-              e.preventDefault();
-              handleClick();
-            }}
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Run
-          </button>
+          {ready ? (
+            <button
+              type="submit"
+              onClick={(e) => {
+                e.preventDefault();
+                handleClick();
+              }}
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Run
+            </button>
+          ) : null}
         </div>
       </div>
     </form>
@@ -324,9 +341,9 @@ function useInterval(callback, delay) {
 }
 
 interface ChartOptions {
-  data: Array<any>;
+  simulation: SimulationResponse;
 }
-const Chart: React.FC<ChartOptions> = ({ data }) => {
+const Chart: React.FC<ChartOptions> = ({ simulation }) => {
   const [dataHover, setDataHover] = useState({
     price: '0',
     date: '-',
@@ -349,8 +366,8 @@ const Chart: React.FC<ChartOptions> = ({ data }) => {
     fetchOsmoPrice();
   }, []);
   useEffect(() => {
-    if (data.length > 0) {
-      const first = data[0];
+    if (simulation.data.length > 0) {
+      const first = simulation.data[0];
       const price = formateNumberDecimals(first.value, 6);
       const currentDate = new Date(first.time * 1000);
       setDataHover({
@@ -359,7 +376,7 @@ const Chart: React.FC<ChartOptions> = ({ data }) => {
         date: formatDateHours(currentDate),
       });
     }
-  }, [data]);
+  }, [simulation]);
   useInterval(() => {
     fetchOsmoPrice();
   }, 5000);
@@ -385,16 +402,31 @@ const Chart: React.FC<ChartOptions> = ({ data }) => {
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <p>Exchange Rate: {dataHover.price}</p>
+      <p>DailyVolume: {formaterNumber(simulation.daily_volume)}OSMO</p>
+      <p>TotalVolume: {formaterNumber(simulation.total_volume)}OSMO</p>
+      <p>Total Buys: {simulation.total_buys} </p>
+      <br />
+      <p>Exchange Rate: 1STARS={dataHover.price}OSMO</p>
       <p>OSMO Price: {formateNumberPriceDecimals(osmoPrice)}</p>
       <p>STARS Price: {formateNumberPriceDecimals(price, 6)}</p>
       <p>DateTime: {dataHover.date}</p>
-      <PriceChart data={data} crossMove={crossMove} />
+      <PriceChart data={simulation.data} crossMove={crossMove} />
     </div>
   );
 };
+interface SimulationResponse {
+  daily_volume: number;
+  total_volume: number;
+  total_buys: number;
+  data: Array<any>;
+}
 export default function Home() {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<SimulationResponse>({
+    data: [],
+    daily_volume: 0,
+    total_buys: 0,
+    total_volume: 0,
+  });
   const handleOnRun = (settings: RunSettings) => {
     const options = {
       method: 'POST',
@@ -406,7 +438,7 @@ export default function Home() {
     fetch('/api/simulate', options)
       .then((resp) => resp.json())
       .then((data) => {
-        setData(data.data);
+        setData(data);
       });
   };
 
@@ -421,7 +453,7 @@ export default function Home() {
         <h1 className="text-6xl font-bold text-blue-600">LBP Simulator</h1>
         <div className="flex-1 relative z-0 flex overflow-hidden h-5/6 ">
           <main className="flex-1 relative z-0  focus:outline-none xl:order-last p-2">
-            <Chart data={data} />
+            <Chart simulation={data} />
           </main>
           <aside className="hidden relative xl:order-first xl:flex xl:flex-col flex-shrink-0 w-96 border-r border-gray-200 overflow-y-auto p-3">
             <Form onRun={handleOnRun} />
