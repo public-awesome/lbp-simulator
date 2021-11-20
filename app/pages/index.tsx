@@ -15,8 +15,8 @@ const PriceChart = dynamic(() => import('../components/charts/price'), {
 
 const lengthOptions = [
   { name: '3d', duration: '72h' },
+  { name: '4d', duration: '96h' },
   { name: '5d', duration: '120h' },
-  { name: '7d', duration: '168h' },
 ];
 
 function classNames(...classes) {
@@ -39,7 +39,7 @@ interface FormProps {
 }
 
 const Form: React.FC<FormProps> = ({ onRun }) => {
-  const [length, setLength] = useState(lengthOptions[1]);
+  const [length, setLength] = useState(lengthOptions[0]);
   const [ready, setReady] = useState(false);
   const [initialWeight, setInitialweight] = useState<Weight>({
     stars: 36,
