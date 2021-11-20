@@ -22,5 +22,5 @@ func TestSomething(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	simulator.Simulate(poolMsg.PoolParams, poolMsg.PoolAssets, 200_000)
+	simulator.Simulate(poolMsg.PoolParams, poolMsg.PoolAssets, 100_000)
 }

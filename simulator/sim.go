@@ -1,6 +1,7 @@
 package simulator
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"sort"
@@ -45,7 +46,7 @@ func Simulate(
 
 	// volume simulation
 	lbpParams := poolParams.SmoothWeightChangeParams
-	simulatedBuys := make([]SimulatedBuyInfo, 0, 500*days) // pre-allocate capacity
+	simulatedBuys := make([]SimulatedBuyInfo, 0, Partitions*days) // pre-allocate capacity
 	total := int64(0)
 	rand.Seed(time.Now().UnixNano())
 	for day := 0; day < days; day++ {
@@ -99,17 +100,12 @@ func Simulate(
 	endTime := startTime.Add(poolParams.SmoothWeightChangeParams.Duration)
 	currentTime := startTime
 
-	pool, err := app.GAMMKeeper.GetPool(ctx, poolId)
-	if err != nil {
-		return nil, err
-	}
-	msgServer := gammkeeper.NewMsgServerImpl(app.GAMMKeeper)
 	prices := make([]PriceData, 0)
 	var totalAmount, totalBuys int64
 	for currentTime.Before(endTime) {
 		ctx = ctx.WithBlockTime(currentTime)
 		var amount, buys int64
-		simulatedBuys, amount, buys, err = ExecuteBuys(ctx, msgServer, pool, simulatedBuys, buyers)
+		simulatedBuys, amount, buys, err = ExecuteBuys(ctx, app.GAMMKeeper, poolId, simulatedBuys, buyers)
 		if err != nil {
 			return nil, err
 		}
@@ -128,7 +124,7 @@ func Simulate(
 
 // ExecuteBuys will execute buys where buy.Time < ctx.BlockTime() and removing them after
 // assumes simulatedBuys has been sorted by time
-func ExecuteBuys(ctx sdk.Context, msgServer types.MsgServer, pool types.PoolI,
+func ExecuteBuys(ctx sdk.Context, keeper gammkeeper.Keeper, poolId uint64,
 	simulatedBuys []SimulatedBuyInfo, buyers []sdk.AccAddress) ([]SimulatedBuyInfo, int64, int64, error) {
 	if len(simulatedBuys) == 0 {
 		return simulatedBuys, 0, 0, nil
@@ -144,10 +140,16 @@ func ExecuteBuys(ctx sdk.Context, msgServer types.MsgServer, pool types.PoolI,
 			break
 		}
 		buyer := buyers[rand.Intn(len(buyers))]
-		msg, err := CreateSwapExactAmountIn(buyer, sdk.NewInt64Coin("uosmo", currentBuy.Amount), pool)
+		pool, err := keeper.GetPool(ctx, poolId)
 		if err != nil {
 			return simulatedBuys, totalAmount, buys, err
 		}
+		msg, err := CreateSwapExactAmountIn(buyer, sdk.NewInt64Coin("uosmo", currentBuy.Amount*1_000_000), pool)
+		if err != nil {
+			fmt.Println(err)
+			return simulatedBuys, totalAmount, buys, err
+		}
+		msgServer := gammkeeper.NewMsgServerImpl(keeper)
 		_, err = msgServer.SwapExactAmountIn(sdk.WrapSDKContext(ctx), msg)
 		if err != nil {
 			return simulatedBuys, totalAmount, buys, err
