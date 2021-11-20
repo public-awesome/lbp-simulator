@@ -2,8 +2,8 @@
 
 ## Requirements
 
-1. [Go](https://golang.org/doc/install)
-2. [Node](https://nodejs.org)
+- [Go](https://golang.org/doc/install)
+- [Node](https://nodejs.org)
 
 ## Run locally
 
@@ -27,3 +27,5 @@ cd app
 yarn install
 yarn dev
 ```
+
+Open [localhost:3000](localhost:3000)
