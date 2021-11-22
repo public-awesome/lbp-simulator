@@ -1,26 +1,26 @@
-import Head from 'next/head';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { RadioGroup } from '@headlessui/react';
-import dynamic from 'next/dynamic';
+import Head from "next/head";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { RadioGroup } from "@headlessui/react";
+import dynamic from "next/dynamic";
 import {
   formatDateHours,
   formateNumberDecimals,
   formateNumberPriceDecimals,
   formaterNumber,
-} from '../util/helpers';
+} from "../util/helpers";
 
-const PriceChart = dynamic(() => import('../components/charts/price'), {
+const PriceChart = dynamic(() => import("../components/charts/price"), {
   ssr: false,
 });
 
 const lengthOptions = [
-  { name: '3d', duration: '72h' },
-  { name: '4d', duration: '96h' },
-  { name: '5d', duration: '120h' },
+  { name: "3d", duration: "72h" },
+  { name: "4d", duration: "96h" },
+  { name: "5d", duration: "120h" },
 ];
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 interface Weight {
@@ -39,11 +39,11 @@ interface FormProps {
 }
 
 const Form: React.FC<FormProps> = ({ onRun }) => {
-  const [length, setLength] = useState(lengthOptions[0]);
+  const [length, setLength] = useState(lengthOptions[1]);
   const [ready, setReady] = useState(false);
   const [initialWeight, setInitialweight] = useState<Weight>({
-    stars: 36,
-    osmo: 4,
+    stars: 38,
+    osmo: 2,
   });
   const [initialDeposit, setInitialDeposit] = useState<Weight>({
     stars: 50000000,
@@ -54,7 +54,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
   const [osmoPrice, setOsmoPrice] = useState(0.0);
   // initial price fetch
   useEffect(() => {
-    fetch('https://api-osmosis.imperator.co/tokens/v1/price/OSMO')
+    fetch("https://api-osmosis.imperator.co/tokens/v1/price/OSMO")
       .then((resp) => resp.json())
       .then((data) => {
         setReady(true);
@@ -89,7 +89,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
               htmlFor="initial-stars-weight"
               className="block text-sm font-medium text-gray-700"
             >
-              STARS{' '}
+              STARS{" "}
               <span className="text-xs">
                 (
                 {formaterNumber(
@@ -122,7 +122,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
               htmlFor="initial-osmo-weight"
               className="block text-sm font-medium text-gray-700"
             >
-              OSMO{' '}
+              OSMO{" "}
               <span className="text-xs">
                 (
                 {formaterNumber(
@@ -160,7 +160,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
               htmlFor="end-stars-weight"
               className="block text-sm font-medium text-gray-700"
             >
-              STARS{' '}
+              STARS{" "}
               <span className="text-xs">
                 ({formaterNumber((endWeight.stars / endWeightTotal) * 100)}
                 %)
@@ -190,7 +190,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
               htmlFor="end-osmo-weight"
               className="block text-sm font-medium text-gray-700"
             >
-              OSMO{' '}
+              OSMO{" "}
               <span className="text-xs">
                 ({formaterNumber((endWeight.osmo / endWeightTotal) * 100)}
                 %)
@@ -231,12 +231,12 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
                     value={option}
                     className={({ active, checked }) =>
                       classNames(
-                        'cursor-pointer focus:outline-none',
-                        active ? 'ring-2 ring-offset-2 ring-indigo-500' : '',
+                        "cursor-pointer focus:outline-none",
+                        active ? "ring-2 ring-offset-2 ring-indigo-500" : "",
                         checked
-                          ? 'bg-indigo-600 border-transparent text-white hover:bg-indigo-700'
-                          : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50',
-                        'border rounded-md py-3 px-3 flex items-center justify-center text-sm font-medium uppercase sm:flex-1'
+                          ? "bg-indigo-600 border-transparent text-white hover:bg-indigo-700"
+                          : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50",
+                        "border rounded-md py-3 px-3 flex items-center justify-center text-sm font-medium uppercase sm:flex-1"
                       )
                     }
                   >
@@ -367,15 +367,15 @@ interface ChartOptions {
 }
 const Chart: React.FC<ChartOptions> = ({ simulation }) => {
   const [dataHover, setDataHover] = useState({
-    price: '0',
-    date: '-',
+    price: "0",
+    date: "-",
     value: 0.0,
   });
-  const [selectTypeChart, setSelectTypeChart] = useState('price');
+  const [selectTypeChart, setSelectTypeChart] = useState("price");
   const [osmoPrice, setOsmoPrice] = useState(0.0);
   const [price, setPrice] = useState(0);
   const fetchOsmoPrice = () => {
-    fetch('https://api-osmosis.imperator.co/tokens/v1/price/OSMO')
+    fetch("https://api-osmosis.imperator.co/tokens/v1/price/OSMO")
       .then((resp) => resp.json())
       .then((data) => {
         setOsmoPrice(data.price);
@@ -427,7 +427,7 @@ const Chart: React.FC<ChartOptions> = ({ simulation }) => {
       ? simulation.data[simulation.data.length - 1].value * osmoPrice
       : 0.0;
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <div style={{ width: "100%", height: "100%" }}>
       <p>DailyVolume: {formaterNumber(simulation.daily_volume)}OSMO</p>
       <p>TotalVolume: {formaterNumber(simulation.total_volume)}OSMO</p>
       <p>Total Buys: {simulation.total_buys} </p>
@@ -457,13 +457,13 @@ export default function Home() {
   });
   const handleOnRun = (settings: RunSettings) => {
     const options = {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(settings),
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     };
-    fetch('/api/simulate', options)
+    fetch("/api/simulate", options)
       .then((resp) => resp.json())
       .then((data) => {
         setData(data);
