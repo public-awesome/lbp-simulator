@@ -54,13 +54,11 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
   const [osmoPrice, setOsmoPrice] = useState(0.0);
   // initial price fetch
   useEffect(() => {
-    fetch(
-      'https://api.coingecko.com/api/v3/simple/price?ids=osmosis&vs_currencies=usd'
-    )
+    fetch('https://api-osmosis.imperator.co/tokens/v1/price/OSMO')
       .then((resp) => resp.json())
       .then((data) => {
         setReady(true);
-        setOsmoPrice(data.osmosis.usd);
+        setOsmoPrice(data.price);
       });
   }, []);
 
@@ -377,12 +375,10 @@ const Chart: React.FC<ChartOptions> = ({ simulation }) => {
   const [osmoPrice, setOsmoPrice] = useState(0.0);
   const [price, setPrice] = useState(0);
   const fetchOsmoPrice = () => {
-    fetch(
-      'https://api.coingecko.com/api/v3/simple/price?ids=osmosis&vs_currencies=usd'
-    )
+    fetch('https://api-osmosis.imperator.co/tokens/v1/price/OSMO')
       .then((resp) => resp.json())
       .then((data) => {
-        setOsmoPrice(data.osmosis.usd);
+        setOsmoPrice(data.price);
       });
   };
   // initial price fetch
@@ -403,7 +399,7 @@ const Chart: React.FC<ChartOptions> = ({ simulation }) => {
   }, [simulation]);
   useInterval(() => {
     fetchOsmoPrice();
-  }, 5000);
+  }, 10000);
 
   const crossMove = useCallback(
     (event, serie) => {
