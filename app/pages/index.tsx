@@ -1,7 +1,11 @@
 import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { ParsedUrlQuery } from 'querystring';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { RadioGroup } from '@headlessui/react';
 import dynamic from 'next/dynamic';
+import { ShareIcon, CheckIcon } from '@heroicons/react/outline';
+import copy from 'copy-to-clipboard';
 import {
   formatDateHours,
   formateNumberDecimals,
@@ -43,7 +47,112 @@ interface FormProps {
   onRun?: (settings: RunSettings) => void;
 }
 
+const parseNumber = (s: string): number | null => {
+  const n = parseFloat(s);
+  if (isNaN(n)) {
+    return null;
+  }
+  return n;
+};
+const ParseQuery = (query: ParsedUrlQuery): Partial<RunSettings> | null => {
+  const settings: Partial<RunSettings> = {};
+  const defaults = {
+    duration: lengthOptions[0].name,
+    initial_weight: '36,4',
+    end_weight: '20,20',
+    fees: '0.02,0.001',
+    volume: '1000000',
+    deposit: '50000000,135000',
+  };
+  const querySettings = Object.fromEntries(Object.entries(query));
+  const initialSettings = {
+    ...defaults,
+    ...querySettings,
+  };
+
+  // duration
+  let validDuration = false;
+
+  lengthOptions.forEach((option) => {
+    if (option.name === initialSettings['duration']) {
+      validDuration = true;
+      settings.duration = option.name;
+    }
+  });
+  if (!validDuration) {
+    return null;
+  }
+
+  console.log(initialSettings, initialSettings['initial_weight']);
+  // initial weight
+  const initial_weights = initialSettings['initial_weight'].split(',');
+  if (initial_weights.length != 2) {
+    return null;
+  }
+  let initial_stars = parseNumber(initial_weights[0]);
+  let initial_osmo = parseNumber(initial_weights[1]);
+  if (initial_stars === null || initial_osmo === null) {
+    return null;
+  }
+  settings.initialWeight = {
+    stars: initial_stars,
+    osmo: initial_osmo,
+  };
+
+  // end weight
+  const end_weights = initialSettings['end_weight'].split(',');
+  if (end_weights.length != 2) {
+    return null;
+  }
+  let end_stars = parseNumber(end_weights[0]);
+  let end_osmo = parseNumber(end_weights[1]);
+  if (end_stars === null || end_osmo === null) {
+    return null;
+  }
+  settings.endWeight = {
+    stars: end_stars,
+    osmo: end_osmo,
+  };
+  // initial deposit
+  const deposit = initialSettings['deposit'].split(',');
+  if (deposit.length != 2) {
+    return null;
+  }
+  let stars = parseNumber(deposit[0]);
+  let osmo = parseNumber(deposit[1]);
+  if (stars === null || osmo === null) {
+    return null;
+  }
+  settings.deposit = {
+    stars: stars,
+    osmo: osmo,
+  };
+
+  // fees
+  const fees = initialSettings['fees'].split(',');
+  if (fees.length != 2) {
+    return null;
+  }
+  let swap = parseNumber(fees[0]);
+  let exit = parseNumber(fees[1]);
+  if (swap === null || exit === null) {
+    return null;
+  }
+  settings.fees = {
+    swap: swap,
+    exit: exit,
+  };
+  let volume = parseNumber(initialSettings['volume']);
+  if (volume === null) {
+    return null;
+  }
+  settings.volume = volume;
+
+  return settings;
+};
 const Form: React.FC<FormProps> = ({ onRun }) => {
+  const { query, basePath, pathname } = useRouter();
+
   const [length, setLength] = useState(lengthOptions[0]);
   const [ready, setReady] = useState(false);
   const [initialWeight, setInitialweight] = useState<Weight>({
@@ -58,6 +167,8 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
   const [dailyVolume, setDailyVolume] = useState(1000000);
   const [osmoPrice, setOsmoPrice] = useState(0.0);
   const [fees, setFees] = useState({ swap: 0.02, exit: 0.001 });
+  const [copied, setCopied] = useState(false);
+
   // initial price fetch
   useEffect(() => {
     fetch('https://api-osmosis.imperator.co/tokens/v1/price/OSMO')
@@ -66,7 +177,47 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
         setReady(true);
         setOsmoPrice(data.price);
       });
-  }, []);
+  });
+  const handleCopy = () => {
+    const baseURL = 'https://lbp-simulator.publicawesome.dev';
+    const url = `${baseURL}/?duration=${
+      length.name
+    }&volume=${dailyVolume.toString()}&fees=${fees.swap},${fees.exit}&deposit=${
+      initialDeposit.stars
+    },${initialDeposit.osmo}&initial_weight=${initialWeight.stars},${
+      initialWeight.osmo
+    }&end_weight=${endWeight.stars},${endWeight.osmo}`;
+    copy(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 4000);
+  };
+  useEffect(() => {
+    if (Object.keys(query).length === 0) {
+      return;
+    }
+    const settings = ParseQuery(query);
+    if (settings?.volume) {
+      setDailyVolume(settings.volume);
+    }
+    if (settings?.duration) {
+      const length = lengthOptions.find((el) => el.name == settings.duration);
+      if (length) {
+        setLength(length);
+      }
+    }
+    if (settings?.fees) {
+      setFees(settings.fees);
+    }
+    if (settings?.initialWeight) {
+      setInitialweight(settings.initialWeight);
+    }
+    if (settings?.endWeight) {
+      setEndweight(settings.endWeight);
+    }
+    if (settings?.deposit) {
+      setInitialDeposit(settings.deposit);
+    }
+  }, [query]);
 
   const handleClick = useCallback(() => {
     if (onRun) {
@@ -391,7 +542,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
           </div>
         </div>
 
-        <div className="pt-5">
+        <div className="flex mt-5">
           {ready ? (
             <button
               type="submit"
@@ -399,11 +550,26 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
                 e.preventDefault();
                 handleClick();
               }}
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="mr-3 inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Run
             </button>
           ) : null}
+          {!copied ? (
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="inline-flex items-center px-4 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <ShareIcon className=" mr-2 h-4 w-4" aria-hidden="true" />
+              Share
+            </button>
+          ) : (
+            <span className="inline-flex items-center px-4 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              <CheckIcon className=" mr-2 h-4 w-4" aria-hidden="true" />
+              Link Copied
+            </span>
+          )}
         </div>
       </div>
     </form>
