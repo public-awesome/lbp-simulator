@@ -509,16 +509,6 @@ const Chart: React.FC<ChartOptions> = ({ simulation }) => {
         date={dataHover.date}
         exchangeRate={dataHover.price}
       />
-      {/* <p>DailyVolume: {formaterNumber(simulation.daily_volume)}OSMO</p>
-      <p>TotalVolume: {formaterNumber(simulation.total_volume)}OSMO</p>
-      <p>Total Buys: {simulation.total_buys} </p>
-      <p>Start Price: {formateNumberPriceDecimals(startPrice)} </p>
-      <p>End Price: {formateNumberPriceDecimals(endPrice)} </p>
-      <br />
-      <p>Exchange Rate: 1STARS={dataHover.price}OSMO</p>
-      <p>OSMO Price: {formateNumberPriceDecimals(osmoPrice)}</p>
-      <p>STARS Price: {formateNumberPriceDecimals(price, 6)}</p>
-      <p>DateTime: {dataHover.date}</p> */}
       <PriceChart data={simulation.data} crossMove={crossMove} />
     </div>
   );
@@ -555,17 +545,6 @@ interface SimulationInfoProps {
   exchangeRate: string;
 }
 const SimulationInfo: React.FC<SimulationInfoProps> = (simulation) => {
-  // <p>DailyVolume: {formaterNumber(simulation.daily_volume)}OSMO</p>
-  // <p>TotalVolume: {formaterNumber(simulation.total_volume)}OSMO</p>
-  // <p>Total Buys: {simulation.total_buys} </p>
-  // <p>Start Price: {formateNumberPriceDecimals(startPrice)} </p>
-  // <p>End Price: {formateNumberPriceDecimals(endPrice)} </p>
-  // <br />
-  // <p>Exchange Rate: 1STARS={dataHover.price}OSMO</p>
-  // <p>OSMO Price: {formateNumberPriceDecimals(osmoPrice)}</p>
-  // <p>STARS Price: {formateNumberPriceDecimals(price, 6)}</p>
-  // <p>DateTime: {dataHover.date}</p>
-
   return (
     <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
       <dl className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-4">
