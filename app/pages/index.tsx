@@ -27,12 +27,17 @@ interface Weight {
   stars: number;
   osmo: number;
 }
+interface Fees {
+  swap: number;
+  exit: number;
+}
 interface RunSettings {
   initialWeight: Weight;
   endWeight: Weight;
   deposit: Weight;
   duration: string;
   volume: number;
+  fees: Fees;
 }
 interface FormProps {
   onRun?: (settings: RunSettings) => void;
@@ -52,6 +57,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
   const [endWeight, setEndweight] = useState<Weight>({ stars: 20, osmo: 20 });
   const [dailyVolume, setDailyVolume] = useState(1000000);
   const [osmoPrice, setOsmoPrice] = useState(0.0);
+  const [fees, setFees] = useState({ swap: 0.02, exit: 0.001 });
   // initial price fetch
   useEffect(() => {
     fetch('https://api-osmosis.imperator.co/tokens/v1/price/OSMO')
@@ -70,6 +76,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
         endWeight: endWeight,
         volume: Math.round(dailyVolume / osmoPrice),
         deposit: initialDeposit,
+        fees: fees,
       });
     }
   }, [length, initialWeight, endWeight, dailyVolume, onRun, osmoPrice]);
@@ -321,6 +328,67 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
               />
             </div>
           </div>
+          <div className="col-span-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Fees
+            </h3>
+          </div>
+          <div className="sm:col-span-3">
+            <label
+              htmlFor="swap-fee"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Swap
+            </label>
+            <div className="mt-1">
+              <input
+                type="number"
+                name="swap-fee"
+                id="swap-fee"
+                value={fees.swap}
+                min={0}
+                max={1}
+                step={0.001}
+                onChange={(e) => {
+                  setFees((prevFees) => {
+                    return {
+                      swap: Number(e.target.value),
+                      exit: prevFees.exit,
+                    };
+                  });
+                }}
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-40  sm:text-sm border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
+          <div className="sm:col-span-3">
+            <label
+              htmlFor="exit"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Exit
+            </label>
+            <div className="mt-1">
+              <input
+                type="number"
+                name="exit"
+                id="exit"
+                value={fees.exit}
+                min={0}
+                max={1}
+                step={0.001}
+                onChange={(e) => {
+                  setFees((prevFees) => {
+                    return {
+                      exit: Number(e.target.value),
+                      swap: prevFees.swap,
+                    };
+                  });
+                }}
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-40  sm:text-sm border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="pt-5">
@@ -428,37 +496,157 @@ const Chart: React.FC<ChartOptions> = ({ simulation }) => {
       : 0.0;
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <p>DailyVolume: {formaterNumber(simulation.daily_volume)}OSMO</p>
-      <p>TotalVolume: {formaterNumber(simulation.total_volume)}OSMO</p>
-      <p>Total Buys: {simulation.total_buys} </p>
-      <p>Start Price: {formateNumberPriceDecimals(startPrice)} </p>
-      <p>End Price: {formateNumberPriceDecimals(endPrice)} </p>
-      <br />
-      <p>Exchange Rate: 1STARS={dataHover.price}OSMO</p>
-      <p>OSMO Price: {formateNumberPriceDecimals(osmoPrice)}</p>
-      <p>STARS Price: {formateNumberPriceDecimals(price, 6)}</p>
-      <p>DateTime: {dataHover.date}</p>
+      <SimulationInfo
+        initial_assets={simulation.initial_assets}
+        end_assets={simulation.end_assets}
+        daily_volume={simulation.daily_volume}
+        total_volume={simulation.total_volume}
+        total_buys={simulation.total_buys}
+        startPrice={startPrice}
+        endPrice={endPrice}
+        osmoPrice={osmoPrice}
+        price={price}
+        date={dataHover.date}
+        exchangeRate={dataHover.price}
+      />
       <PriceChart data={simulation.data} crossMove={crossMove} />
     </div>
   );
 };
+
+interface Token {
+  amount: string;
+  denom: string;
+}
+interface PoolAsset {
+  token: Token;
+  weight: string;
+}
 interface SimulationResponse {
   daily_volume: number;
   total_volume: number;
   total_buys: number;
   data: Array<any>;
+  initial_assets: Array<PoolAsset>;
+  end_assets: Array<PoolAsset>;
 }
+
+interface SimulationInfoProps {
+  daily_volume: number;
+  total_volume: number;
+  total_buys: number;
+  initial_assets: Array<PoolAsset>;
+  end_assets: Array<PoolAsset>;
+  startPrice: number;
+  endPrice: number;
+  osmoPrice: number;
+  price: number;
+  date: string;
+  exchangeRate: string;
+}
+const SimulationInfo: React.FC<SimulationInfoProps> = (simulation) => {
+  return (
+    <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
+      <dl className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-4">
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">DailyVolume</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {formaterNumber(simulation.daily_volume)}OSMO
+          </dd>
+        </div>
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">TotalVolume</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {formaterNumber(simulation.total_volume)}OSMO
+          </dd>
+        </div>
+        <div className="sm:col-span-2">
+          <dt className="text-sm font-medium text-gray-500">TotalBuys</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {simulation.total_buys}
+          </dd>
+        </div>
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">OSMO Price</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {formateNumberPriceDecimals(simulation.osmoPrice)}
+          </dd>
+        </div>
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">Start Price</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {formateNumberPriceDecimals(simulation.startPrice)}
+          </dd>
+        </div>
+        <div className="sm:col-span-2">
+          <dt className="text-sm font-medium text-gray-500">End Price</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {formateNumberPriceDecimals(simulation.endPrice)}
+          </dd>
+        </div>
+        <div className="sm:col-span-2">
+          <dt className="text-sm font-medium text-gray-500">Initial Assets</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {simulation.initial_assets.length > 1
+              ? `${simulation.initial_assets[0].token.amount}${simulation.initial_assets[0].token.denom}`
+              : null}
+            ,
+            {simulation.initial_assets.length > 1
+              ? `${simulation.initial_assets[1].token.amount}${simulation.initial_assets[1].token.denom}`
+              : null}
+          </dd>
+        </div>{' '}
+        <div className="sm:col-span-2">
+          <dt className="text-sm font-medium text-gray-500">End Assets</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {simulation.end_assets.length > 1
+              ? `${simulation.end_assets[0].token.amount}${simulation.end_assets[0].token.denom}`
+              : null}
+            ,
+            {simulation.end_assets.length > 1
+              ? `${simulation.end_assets[1].token.amount}${simulation.end_assets[1].token.denom}`
+              : null}
+          </dd>
+        </div>
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">DateTime</dt>
+          <dd className="mt-1 text-sm text-gray-900">{simulation.date}</dd>
+        </div>
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">Exchange Rate</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            1STARS={simulation.exchangeRate}OSMO
+          </dd>
+        </div>
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">STARS Price</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {formateNumberPriceDecimals(simulation.price, 6)}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  );
+};
 export default function Home() {
   const [data, setData] = useState<SimulationResponse>({
     data: [],
     daily_volume: 0,
     total_buys: 0,
     total_volume: 0,
+    initial_assets: [],
+    end_assets: [],
   });
   const handleOnRun = (settings: RunSettings) => {
     const options = {
       method: 'POST',
-      body: JSON.stringify(settings),
+      body: JSON.stringify({
+        ...settings,
+        fees: {
+          swap: settings.fees.swap.toString(),
+          exit: settings.fees.exit.toString(),
+        },
+      }),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -478,7 +666,9 @@ export default function Home() {
       </Head>
 
       <div className="max-w-full mx-auto sm:px-6 lg:px-8 min-h-screen">
-        <h1 className="text-6xl font-bold text-blue-600">LBP Simulator</h1>
+        <h1 className="text-4xl font-bold text-blue-600">
+          OSMOSIS LBP Simulator
+        </h1>
         <div className="flex-1 relative z-0 flex overflow-hidden h-5/6 ">
           <main className="flex-1 relative z-0  focus:outline-none xl:order-last p-2">
             <Chart simulation={data} />

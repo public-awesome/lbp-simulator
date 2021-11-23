@@ -50,14 +50,18 @@ type SimulateRequest struct {
 		Stars int `json:"stars"`
 		Osmo  int `json:"osmo"`
 	} `json:"deposit"`
+	Fees struct {
+		Swap string `json:"swap"`
+		Exit string `json:"exit"`
+	} `json:"fees"`
 }
 
 func (r SimulateRequest) Marshal() ([]byte, error) {
 	tpl := `{
 		"weights": "%sustars,%suosmo",
 		"initial-deposit": "%sustars,%suosmo",
-		"swap-fee": "0.003",
-		"exit-fee": "0.001",
+		"swap-fee": "%s",
+		"exit-fee": "%s",
 		"lbp-params": {
 			"duration": "%s",
 			"target-pool-weights": "%sustars,%suosmo"
@@ -67,6 +71,7 @@ func (r SimulateRequest) Marshal() ([]byte, error) {
 	tmp := fmt.Sprintf(tpl,
 		strconv.Itoa(r.InitialWeight.Stars), strconv.Itoa(r.InitialWeight.Osmo),
 		strconv.Itoa(r.Deposit.Stars*1_000_000), strconv.Itoa(r.Deposit.Osmo*1_000_000),
+		r.Fees.Swap, r.Fees.Exit,
 		r.Duration,
 		strconv.Itoa(r.EndWeight.Stars), strconv.Itoa(r.EndWeight.Osmo),
 	)
