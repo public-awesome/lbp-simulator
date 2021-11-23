@@ -20,10 +20,12 @@ type PriceData struct {
 }
 
 type SimulationResponse struct {
-	Data        []PriceData `json:"data"`
-	DailyVolume int64       `json:"daily_volume"`
-	TotalVolume int64       `json:"total_volume"`
-	TotalBuys   int64       `json:"total_buys"`
+	Data          []PriceData       `json:"data"`
+	DailyVolume   int64             `json:"daily_volume"`
+	TotalVolume   int64             `json:"total_volume"`
+	TotalBuys     int64             `json:"total_buys"`
+	InitialAssets []types.PoolAsset `json:"initial_assets"`
+	EndAssets     []types.PoolAsset `json:"end_assets"`
 }
 
 func Simulate(
@@ -101,6 +103,11 @@ func Simulate(
 
 	prices := make([]PriceData, 0)
 	var totalAmount, totalBuys int64
+	pool, err := app.GAMMKeeper.GetPool(ctx, poolId)
+	if err != nil {
+		return nil, err
+	}
+	initialAssets := pool.GetAllPoolAssets()
 	for currentTime.Before(endTime) {
 		ctx = ctx.WithBlockTime(currentTime)
 		var amount, buys int64
@@ -117,7 +124,18 @@ func Simulate(
 		prices = append(prices, PriceData{currentTime.Unix(), spotPrice})
 		currentTime = currentTime.Add(time.Minute * 5)
 	}
-	resp := &SimulationResponse{Data: prices, TotalVolume: totalAmount, TotalBuys: totalBuys, DailyVolume: dailyVolume}
+	pool, err = app.GAMMKeeper.GetPool(ctx, poolId)
+	if err != nil {
+		return nil, err
+	}
+	endAssets := pool.GetAllPoolAssets()
+	resp := &SimulationResponse{Data: prices,
+		TotalVolume:   totalAmount,
+		TotalBuys:     totalBuys,
+		DailyVolume:   dailyVolume,
+		InitialAssets: initialAssets,
+		EndAssets:     endAssets,
+	}
 	return resp, nil
 }
 

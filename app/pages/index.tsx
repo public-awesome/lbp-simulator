@@ -496,7 +496,20 @@ const Chart: React.FC<ChartOptions> = ({ simulation }) => {
       : 0.0;
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <p>DailyVolume: {formaterNumber(simulation.daily_volume)}OSMO</p>
+      <SimulationInfo
+        initial_assets={simulation.initial_assets}
+        end_assets={simulation.end_assets}
+        daily_volume={simulation.daily_volume}
+        total_volume={simulation.total_volume}
+        total_buys={simulation.total_buys}
+        startPrice={startPrice}
+        endPrice={endPrice}
+        osmoPrice={osmoPrice}
+        price={price}
+        date={dataHover.date}
+        exchangeRate={dataHover.price}
+      />
+      {/* <p>DailyVolume: {formaterNumber(simulation.daily_volume)}OSMO</p>
       <p>TotalVolume: {formaterNumber(simulation.total_volume)}OSMO</p>
       <p>Total Buys: {simulation.total_buys} </p>
       <p>Start Price: {formateNumberPriceDecimals(startPrice)} </p>
@@ -505,23 +518,145 @@ const Chart: React.FC<ChartOptions> = ({ simulation }) => {
       <p>Exchange Rate: 1STARS={dataHover.price}OSMO</p>
       <p>OSMO Price: {formateNumberPriceDecimals(osmoPrice)}</p>
       <p>STARS Price: {formateNumberPriceDecimals(price, 6)}</p>
-      <p>DateTime: {dataHover.date}</p>
+      <p>DateTime: {dataHover.date}</p> */}
       <PriceChart data={simulation.data} crossMove={crossMove} />
     </div>
   );
 };
+
+interface Token {
+  amount: string;
+  denom: string;
+}
+interface PoolAsset {
+  token: Token;
+  weight: string;
+}
 interface SimulationResponse {
   daily_volume: number;
   total_volume: number;
   total_buys: number;
   data: Array<any>;
+  initial_assets: Array<PoolAsset>;
+  end_assets: Array<PoolAsset>;
 }
+
+interface SimulationInfoProps {
+  daily_volume: number;
+  total_volume: number;
+  total_buys: number;
+  initial_assets: Array<PoolAsset>;
+  end_assets: Array<PoolAsset>;
+  startPrice: number;
+  endPrice: number;
+  osmoPrice: number;
+  price: number;
+  date: string;
+  exchangeRate: string;
+}
+const SimulationInfo: React.FC<SimulationInfoProps> = (simulation) => {
+  // <p>DailyVolume: {formaterNumber(simulation.daily_volume)}OSMO</p>
+  // <p>TotalVolume: {formaterNumber(simulation.total_volume)}OSMO</p>
+  // <p>Total Buys: {simulation.total_buys} </p>
+  // <p>Start Price: {formateNumberPriceDecimals(startPrice)} </p>
+  // <p>End Price: {formateNumberPriceDecimals(endPrice)} </p>
+  // <br />
+  // <p>Exchange Rate: 1STARS={dataHover.price}OSMO</p>
+  // <p>OSMO Price: {formateNumberPriceDecimals(osmoPrice)}</p>
+  // <p>STARS Price: {formateNumberPriceDecimals(price, 6)}</p>
+  // <p>DateTime: {dataHover.date}</p>
+
+  return (
+    <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
+      <dl className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-4">
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">DailyVolume</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {formaterNumber(simulation.daily_volume)}OSMO
+          </dd>
+        </div>
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">TotalVolume</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {formaterNumber(simulation.total_volume)}OSMO
+          </dd>
+        </div>
+        <div className="sm:col-span-2">
+          <dt className="text-sm font-medium text-gray-500">TotalBuys</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {simulation.total_buys}
+          </dd>
+        </div>
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">OSMO Price</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {formateNumberPriceDecimals(simulation.osmoPrice)}
+          </dd>
+        </div>
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">Start Price</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {formateNumberPriceDecimals(simulation.startPrice)}
+          </dd>
+        </div>
+        <div className="sm:col-span-2">
+          <dt className="text-sm font-medium text-gray-500">End Price</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {formateNumberPriceDecimals(simulation.endPrice)}
+          </dd>
+        </div>
+        <div className="sm:col-span-2">
+          <dt className="text-sm font-medium text-gray-500">Initial Assets</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {simulation.initial_assets.length > 1
+              ? `${simulation.initial_assets[0].token.amount}${simulation.initial_assets[0].token.denom}`
+              : null}
+            ,
+            {simulation.initial_assets.length > 1
+              ? `${simulation.initial_assets[1].token.amount}${simulation.initial_assets[1].token.denom}`
+              : null}
+          </dd>
+        </div>{' '}
+        <div className="sm:col-span-2">
+          <dt className="text-sm font-medium text-gray-500">End Assets</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {simulation.end_assets.length > 1
+              ? `${simulation.end_assets[0].token.amount}${simulation.end_assets[0].token.denom}`
+              : null}
+            ,
+            {simulation.end_assets.length > 1
+              ? `${simulation.end_assets[1].token.amount}${simulation.end_assets[1].token.denom}`
+              : null}
+          </dd>
+        </div>
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">DateTime</dt>
+          <dd className="mt-1 text-sm text-gray-900">{simulation.date}</dd>
+        </div>
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">Exchange Rate</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            1STARS={simulation.exchangeRate}OSMO
+          </dd>
+        </div>
+        <div className="sm:col-span-1">
+          <dt className="text-sm font-medium text-gray-500">STARS Price</dt>
+          <dd className="mt-1 text-sm text-gray-900">
+            {formateNumberPriceDecimals(simulation.price, 6)}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  );
+};
 export default function Home() {
   const [data, setData] = useState<SimulationResponse>({
     data: [],
     daily_volume: 0,
     total_buys: 0,
     total_volume: 0,
+    initial_assets: [],
+    end_assets: [],
   });
   const handleOnRun = (settings: RunSettings) => {
     const options = {
