@@ -27,12 +27,17 @@ interface Weight {
   stars: number;
   osmo: number;
 }
+interface Fees {
+  swap: number;
+  exit: number;
+}
 interface RunSettings {
   initialWeight: Weight;
   endWeight: Weight;
   deposit: Weight;
   duration: string;
   volume: number;
+  fees: Fees;
 }
 interface FormProps {
   onRun?: (settings: RunSettings) => void;
@@ -52,6 +57,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
   const [endWeight, setEndweight] = useState<Weight>({ stars: 20, osmo: 20 });
   const [dailyVolume, setDailyVolume] = useState(1000000);
   const [osmoPrice, setOsmoPrice] = useState(0.0);
+  const [fees, setFees] = useState({ swap: 0.02, exit: 0.001 });
   // initial price fetch
   useEffect(() => {
     fetch('https://api-osmosis.imperator.co/tokens/v1/price/OSMO')
@@ -70,6 +76,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
         endWeight: endWeight,
         volume: Math.round(dailyVolume / osmoPrice),
         deposit: initialDeposit,
+        fees: fees,
       });
     }
   }, [length, initialWeight, endWeight, dailyVolume, onRun, osmoPrice]);
@@ -321,6 +328,67 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
               />
             </div>
           </div>
+          <div className="col-span-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Fees
+            </h3>
+          </div>
+          <div className="sm:col-span-3">
+            <label
+              htmlFor="swap-fee"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Swap
+            </label>
+            <div className="mt-1">
+              <input
+                type="number"
+                name="swap-fee"
+                id="swap-fee"
+                value={fees.swap}
+                min={0}
+                max={1}
+                step={0.001}
+                onChange={(e) => {
+                  setFees((prevFees) => {
+                    return {
+                      swap: Number(e.target.value),
+                      exit: prevFees.exit,
+                    };
+                  });
+                }}
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-40  sm:text-sm border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
+          <div className="sm:col-span-3">
+            <label
+              htmlFor="exit"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Exit
+            </label>
+            <div className="mt-1">
+              <input
+                type="number"
+                name="exit"
+                id="exit"
+                value={fees.exit}
+                min={0}
+                max={1}
+                step={0.001}
+                onChange={(e) => {
+                  setFees((prevFees) => {
+                    return {
+                      exit: Number(e.target.value),
+                      swap: prevFees.swap,
+                    };
+                  });
+                }}
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-40  sm:text-sm border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="pt-5">
@@ -458,7 +526,13 @@ export default function Home() {
   const handleOnRun = (settings: RunSettings) => {
     const options = {
       method: 'POST',
-      body: JSON.stringify(settings),
+      body: JSON.stringify({
+        ...settings,
+        fees: {
+          swap: settings.fees.swap.toString(),
+          exit: settings.fees.exit.toString(),
+        },
+      }),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -478,7 +552,9 @@ export default function Home() {
       </Head>
 
       <div className="max-w-full mx-auto sm:px-6 lg:px-8 min-h-screen">
-        <h1 className="text-6xl font-bold text-blue-600">LBP Simulator</h1>
+        <h1 className="text-4xl font-bold text-blue-600">
+          OSMOSIS LBP Simulator
+        </h1>
         <div className="flex-1 relative z-0 flex overflow-hidden h-5/6 ">
           <main className="flex-1 relative z-0  focus:outline-none xl:order-last p-2">
             <Chart simulation={data} />
