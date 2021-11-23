@@ -18,6 +18,7 @@ const PriceChart = dynamic(() => import('../components/charts/price'), {
 });
 
 const lengthOptions = [
+  { name: '2d', duration: '48h' },
   { name: '3d', duration: '72h' },
   { name: '4d', duration: '96h' },
   { name: '5d', duration: '120h' },
