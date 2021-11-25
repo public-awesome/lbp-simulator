@@ -237,7 +237,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
   return (
     <form className="space-y-8 divide-y divide-gray-200">
       <div className="max-w-md">
-        <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-6">
+        <div className="grid grid-cols-1 gap-y-3 sm:grid-cols-6">
           <div className="col-span-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
               Initial Weight
@@ -676,7 +676,9 @@ const Chart: React.FC<ChartOptions> = ({ simulation }) => {
         date={dataHover.date}
         exchangeRate={dataHover.price}
       />
-      <PriceChart data={simulation.data} crossMove={crossMove} />
+      <div style={{ height: '650px' }}>
+        <PriceChart data={simulation.data} crossMove={crossMove} />
+      </div>
     </div>
   );
 };
@@ -713,46 +715,46 @@ interface SimulationInfoProps {
 }
 const SimulationInfo: React.FC<SimulationInfoProps> = (simulation) => {
   return (
-    <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
-      <dl className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-4">
+    <div className="px-6">
+      <dl className="grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-4">
         <div className="sm:col-span-1">
-          <dt className="text-sm font-medium text-gray-500">DailyVolume</dt>
+          <dt className="text-sm font-bold text-indigo-700">DailyVolume</dt>
           <dd className="mt-1 text-sm text-gray-900">
             {formaterNumber(simulation.daily_volume)}OSMO
           </dd>
         </div>
         <div className="sm:col-span-1">
-          <dt className="text-sm font-medium text-gray-500">TotalVolume</dt>
+          <dt className="text-sm font-bold text-indigo-700">TotalVolume</dt>
           <dd className="mt-1 text-sm text-gray-900">
             {formaterNumber(simulation.total_volume)}OSMO
           </dd>
         </div>
         <div className="sm:col-span-2">
-          <dt className="text-sm font-medium text-gray-500">TotalBuys</dt>
+          <dt className="text-sm font-bold text-indigo-700">TotalBuys</dt>
           <dd className="mt-1 text-sm text-gray-900">
             {simulation.total_buys}
           </dd>
         </div>
         <div className="sm:col-span-1">
-          <dt className="text-sm font-medium text-gray-500">OSMO Price</dt>
+          <dt className="text-sm font-bold text-indigo-700">OSMO Price</dt>
           <dd className="mt-1 text-sm text-gray-900">
             {formateNumberPriceDecimals(simulation.osmoPrice)}
           </dd>
         </div>
         <div className="sm:col-span-1">
-          <dt className="text-sm font-medium text-gray-500">Start Price</dt>
+          <dt className="text-sm font-bold text-indigo-700">Start Price</dt>
           <dd className="mt-1 text-sm text-gray-900">
             {formateNumberPriceDecimals(simulation.startPrice)}
           </dd>
         </div>
         <div className="sm:col-span-2">
-          <dt className="text-sm font-medium text-gray-500">End Price</dt>
+          <dt className="text-sm font-bold text-indigo-700">End Price</dt>
           <dd className="mt-1 text-sm text-gray-900">
             {formateNumberPriceDecimals(simulation.endPrice)}
           </dd>
         </div>
         <div className="sm:col-span-2">
-          <dt className="text-sm font-medium text-gray-500">Initial Assets</dt>
+          <dt className="text-sm font-bold text-indigo-700">Initial Assets</dt>
           <dd className="mt-1 text-sm text-gray-900">
             {simulation.initial_assets.length > 1
               ? `${simulation.initial_assets[0].token.amount}${simulation.initial_assets[0].token.denom}`
@@ -764,7 +766,7 @@ const SimulationInfo: React.FC<SimulationInfoProps> = (simulation) => {
           </dd>
         </div>{' '}
         <div className="sm:col-span-2">
-          <dt className="text-sm font-medium text-gray-500">End Assets</dt>
+          <dt className="text-sm font-bold text-indigo-700">End Assets</dt>
           <dd className="mt-1 text-sm text-gray-900">
             {simulation.end_assets.length > 1
               ? `${simulation.end_assets[0].token.amount}${simulation.end_assets[0].token.denom}`
@@ -776,17 +778,17 @@ const SimulationInfo: React.FC<SimulationInfoProps> = (simulation) => {
           </dd>
         </div>
         <div className="sm:col-span-1">
-          <dt className="text-sm font-medium text-gray-500">DateTime</dt>
+          <dt className="text-sm font-bold text-indigo-700">DateTime</dt>
           <dd className="mt-1 text-sm text-gray-900">{simulation.date}</dd>
         </div>
         <div className="sm:col-span-1">
-          <dt className="text-sm font-medium text-gray-500">Exchange Rate</dt>
+          <dt className="text-sm font-bold text-indigo-700">Exchange Rate</dt>
           <dd className="mt-1 text-sm text-gray-900">
             1STARS={simulation.exchangeRate}OSMO
           </dd>
         </div>
         <div className="sm:col-span-1">
-          <dt className="text-sm font-medium text-gray-500">STARS Price</dt>
+          <dt className="text-sm font-bold text-indigo-700">STARS Price</dt>
           <dd className="mt-1 text-sm text-gray-900">
             {formateNumberPriceDecimals(simulation.price, 6)}
           </dd>
@@ -837,7 +839,7 @@ export default function Home() {
           OSMOSIS LBP Simulator
         </h1>
         <div className="flex-1 relative z-0 flex overflow-hidden h-5/6 ">
-          <main className="flex-1 relative z-0  focus:outline-none xl:order-last p-2">
+          <main className="flex-1 relative z-0  focus:outline-none xl:order-last px-3">
             <Chart simulation={data} />
           </main>
           <aside className="hidden relative xl:order-first xl:flex xl:flex-col flex-shrink-0 w-96 border-r border-gray-200 overflow-y-auto p-3">
