@@ -62,7 +62,7 @@ const ParseQuery = (query: ParsedUrlQuery): Partial<RunSettings> | null => {
     initial_weight: '36,4',
     end_weight: '20,20',
     fees: '0.02,0.001',
-    volume: '1000000',
+    volume: '100000',
     deposit: '50000000,135000',
   };
   const querySettings = Object.fromEntries(Object.entries(query));
@@ -165,7 +165,7 @@ const Form: React.FC<FormProps> = ({ onRun }) => {
     osmo: 135000,
   });
   const [endWeight, setEndweight] = useState<Weight>({ stars: 20, osmo: 20 });
-  const [dailyVolume, setDailyVolume] = useState(1000000);
+  const [dailyVolume, setDailyVolume] = useState(100000);
   const [osmoPrice, setOsmoPrice] = useState(0.0);
   const [fees, setFees] = useState({ swap: 0.02, exit: 0.001 });
   const [copied, setCopied] = useState(false);
